@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"golang-restaurant-management/database"	
-	"golang-restaurant-management/routes"
-	"github.com/gin-gonic/gin"
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/database"    
+    "github.com/TejaswiniYammanuru/golang-restaurant-management/routes"
+    "github.com/gin-gonic/gin"
 )
 
 func main() {

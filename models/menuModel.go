@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"golang-restaurant-management/database"
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/database"
 	"time"
 )
 

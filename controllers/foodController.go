@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"golang-restaurant-management/models"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,7 +19,12 @@ func GetFoods() gin.HandlerFunc {
 func GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id := c.Param("food_id")
-		food, err := models.GetFoodByID(id)
+		idInt, err := strconv.Atoi(id)
+		if err!= nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid food ID"})
+            return
+        }
+		food, err := models.GetFoodByID(idInt)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Food not found"})
 			return

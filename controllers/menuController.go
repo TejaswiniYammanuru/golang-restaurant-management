@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"database/sql"
-	"golang-restaurant-management/models"
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/models"
 	"net/http"
 	"strconv"
 	"time"
