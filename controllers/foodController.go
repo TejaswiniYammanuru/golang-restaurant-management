@@ -9,12 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+
+
 func GetFoods() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		foods, err := models.GetAllFoods()
+        if err!= nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+        c.JSON(http.StatusOK, gin.H{"foods": foods})
 
 	}
 
 }
+
 
 func GetFood() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -80,9 +89,93 @@ func CreateFood() gin.HandlerFunc {
 // func toFixed(num float64, precision int) float64 {
 // }
 
-func UpdateFood() gin.HandlerFunc {
-	return func(c *gin.Context) {
 
-	}
+		
+		
+func UpdateFood() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        id := c.Param("food_id")
+        idInt, err := strconv.Atoi(id)
+        if err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid food ID"})
+            return
+        }
+
+        var updatedFood models.Food
+        if err := c.ShouldBindJSON(&updatedFood); err != nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            return
+        }
+
+        food, err := models.GetFoodByID(idInt)
+        if err != nil {
+            c.JSON(http.StatusNotFound, gin.H{"error": "Food not found"})
+            return
+        }
+
+        if updatedFood.Name != "" {
+            food.Name = updatedFood.Name
+        }
+
+        if updatedFood.MenuID != "" {
+            menuID, err := strconv.Atoi(updatedFood.MenuID)
+            if err != nil {
+                c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid MenuID"})
+                return
+            }
+
+            _, err = models.GetMenuByID(menuID)
+            if err != nil {
+                c.JSON(http.StatusBadRequest, gin.H{"error": "Menu not found"})
+                return
+            }
+
+            food.MenuID = updatedFood.MenuID
+        }
+
+        if updatedFood.Price != 0 {
+            food.Price = updatedFood.Price
+        }
+
+        if updatedFood.FoodImage != "" {
+            food.FoodImage = updatedFood.FoodImage
+        }
+        food.UpdatedAt = time.Now()
+
+        err = models.UpdateFood(food)
+        if err != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{
+            "message": "Food updated successfully",
+            "food":    food,
+        })
+    }
+}
+
+
+func DeleteFood() gin.HandlerFunc {
+	return func(c *gin.Context) {
+        id := c.Param("food_id")
+        idInt, err := strconv.Atoi(id)
+        if err!= nil {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid food ID"})
+            return
+        }
+
+        err = models.DeleteFood(idInt)
+        if err!= nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{"message": "Food deleted successfully"})
+    }
 
 }
+
+
+
+

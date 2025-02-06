@@ -19,7 +19,7 @@ type Food struct {
 }
 
 func GetFoodByID(FoodID int) (*Food, error) {
-	query := "SELECT id,name,price,food_image,created_at,updated_at,food_id,menu_id FROM food WHERE id=$1"
+	query := "SELECT id,name,price,food_image,created_at,updated_at,menu_id FROM food WHERE id=$1"
 
 	var food Food
 
@@ -52,8 +52,8 @@ func GetFoodByID(FoodID int) (*Food, error) {
 func CreateFood(food *Food) error {
 	// The SQL query to insert a new food item into the food table.
 	// The placeholders ($1, $2, etc.) are used to prevent SQL injection attacks.
-	query := `INSERT INTO food (name, price, food_image, created_at, updated_at, food_id, menu_id) 
-    VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`
+	query := `INSERT INTO food (name, price, food_image, created_at, updated_at,menu_id) 
+    VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`
 
 	// Execute the SQL query with the provided food details.
 	// The Scan function is used to retrieve the generated food ID from the database.
@@ -67,3 +67,74 @@ func CreateFood(food *Food) error {
 	// If the food item is successfully inserted into the database, return nil to indicate success.
 	return nil
 }
+
+
+func GetAllFoods()([]Food,error){
+	query := "SELECT id,name,price,food_image,created_at,updated_at,menu_id FROM food"
+
+    rows,err := database.DB.Query(query)
+    if err!= nil{
+        return nil,err
+    }
+
+    defer rows.Close()
+
+    var foods []Food
+
+    for rows.Next(){
+        var food Food
+        err := rows.Scan(&food.ID, &food.Name, &food.Price, &food.FoodImage, &food.CreatedAt, &food.UpdatedAt, &food.MenuID)
+        if err!= nil{
+            return nil,err
+        }
+
+        foods = append(foods, food)
+    }
+
+    return foods,nil
+
+}
+
+
+func UpdateFood(food *Food) error {
+	query := `UPDATE food SET name=$1, price=$2, food_image=$3, updated_at=$4, menu_id=$5 WHERE id=$6`
+
+    result, err := database.DB.Exec(query, food.Name, food.Price, food.FoodImage, food.UpdatedAt, food.MenuID, food.ID)
+    if err!= nil {
+        return fmt.Errorf("unable to update food record: %v", err)
+    }
+
+    rowsAffected, err := result.RowsAffected()
+    if err!= nil {
+        return fmt.Errorf("failed to get rows affected: %v", err)
+    }
+
+    if rowsAffected == 0 {
+        return errors.New("food not found")
+    }
+
+    return nil
+	
+}
+
+
+func DeleteFood(foodID int) error {
+	query := "DELETE FROM food WHERE id=$1"
+
+    result, err := database.DB.Exec(query, foodID)
+    if err!= nil {
+        return fmt.Errorf("unable to delete food record: %v", err)
+    }
+
+    rowsAffected, err := result.RowsAffected()
+    if err!= nil {
+        return fmt.Errorf("failed to get rows affected: %v", err)
+    }
+
+    if rowsAffected == 0 {
+        return errors.New("food not found")
+    }
+
+    return nil
+}
+
