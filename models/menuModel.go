@@ -19,7 +19,7 @@ type Menu struct {
 
 func GetMenus() ([]Menu, error) {
 	query := "SELECT id,name,category,start_date,end_date,created_at,updated_at FROM menu"
-	rows, err := database.DB.Query(query)
+	rows, err := database.DB.Query(query)//Query executes a query that returns rows, typically a SELECT. The args are for any placeholder parameters in the query.
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +73,7 @@ func CreateMenu(menu *Menu) error {
 
 	return nil
 }
+
 
 
 func UpdateMenu(menu Menu)error{

@@ -54,11 +54,19 @@ func CreateMenu() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		var menu models.Menu
-
+           
 		if err := c.ShouldBindJSON(&menu); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		//check if end date is after the start date
+		if menu.StartDate.After(menu.EndDate) {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Start date cannot be after end date"})
+            return
+        }
+
+
 
 		menu.CreatedAt = time.Now()
 		menu.UpdatedAt = time.Now()
@@ -115,6 +123,12 @@ func UpdateMenu() gin.HandlerFunc {
 		if !updatedMenu.EndDate.IsZero() {
 			menu.EndDate = updatedMenu.EndDate
 		}
+
+		//check if end date is after the start date
+		if menu.StartDate.After(menu.EndDate) {
+            c.JSON(http.StatusBadRequest, gin.H{"error": "Start date cannot be after end date"})
+            return
+        }
 		
 
         menu.UpdatedAt = time.Now()

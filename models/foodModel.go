@@ -9,14 +9,18 @@ import (
 )
 
 type Food struct {
-	ID        int       `json:"id"`
+	ID        int       `json:"id" gorm:"primaryKey"`
 	Name      string    `json:"name" validate:"required,min=2,max=100"`
 	Price     float64   `json:"price" validate:"required"`
 	FoodImage string    `json:"food_image" validate:"required"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	MenuID    string    `json:"menu_id" validate:"required"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
+	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
+	MenuID    int    `json:"menu_id" validate:"required" gorm:"not null;index"`
+
+	
+	
 }
+
 
 func GetFoodByID(FoodID int) (*Food, error) {
 	query := "SELECT id,name,price,food_image,created_at,updated_at,menu_id FROM food WHERE id=$1"
