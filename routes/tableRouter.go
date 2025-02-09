@@ -1,17 +1,20 @@
 package routes
 
 import (
-	controller "github.com/TejaswiniYammanuru/golang-restaurant-management/controllers"
-
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/controllers"
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/middleware"
 	"github.com/gin-gonic/gin"
 )
 
+func TableRoutes(router *gin.Engine) {
+	// Public routes (view tables)
+	router.GET("/tables", controllers.GetTables())
+	router.GET("/tables/:table_id", controllers.GetTable())
 
+	// Protect create and update routes with admin authentication
+	adminRoutes := router.Group("/")
+	adminRoutes.Use(middleware.AdminAuthentication())
 
-func TableRoutes(incomingRoutes *gin.Engine){
-	incomingRoutes.GET("/tables", controller.GetTables())
-	incomingRoutes.GET("/tables/:table_id",controller.GetTable())
-	incomingRoutes.POST("/tables",controller.CreateTable())
-	incomingRoutes.PATCH("/tables/:table_id",controller.UpdateTable())
-
-}                  
+	adminRoutes.POST("/tables", controllers.CreateTable())
+	adminRoutes.PATCH("/tables/:table_id", controllers.UpdateTable())
+}

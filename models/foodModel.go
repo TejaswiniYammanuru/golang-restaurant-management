@@ -142,3 +142,30 @@ func DeleteFood(foodID int) error {
     return nil
 }
 
+
+func GetFoodsByMenuID(menuID int)([]Food, error){
+	query := "SELECT id,name,price,food_image,created_at,updated_at,menu_id FROM food where menu_id=$1"
+
+    rows,err := database.DB.Query(query,menuID)
+    if err!= nil{
+        return nil,err
+    }
+
+    defer rows.Close()
+
+    var foods []Food
+
+    for rows.Next(){
+        var food Food
+        err := rows.Scan(&food.ID, &food.Name, &food.Price, &food.FoodImage, &food.CreatedAt, &food.UpdatedAt, &food.MenuID)
+        if err!= nil{
+            return nil,err
+        }
+
+        foods = append(foods, food)
+    }
+
+    return foods,nil
+
+
+}

@@ -13,11 +13,10 @@ func GetOrders() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		orders, err := models.GetAllOrders()
 		if err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(200, gin.H{"orders": orders})
-
+		c.JSON(http.StatusOK, gin.H{"orders": orders})
 	}
 }
 
@@ -26,41 +25,46 @@ func GetOrder() gin.HandlerFunc {
 		id := c.Param("order_id")
 		orderId, err := strconv.Atoi(id)
 		if err != nil {
-			c.JSON(404, gin.H{"error": "Invalid order id"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid order ID"})
 			return
 		}
+
 		order, err := models.GetOrderByID(orderId)
 		if err != nil {
-			c.JSON(404, gin.H{"error": "Order not found"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
 			return
 		}
-		c.JSON(200, gin.H{"order": order})
-
+		c.JSON(http.StatusOK, gin.H{"order": order})
 	}
 }
 
 func CreateOrder() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var order models.Order
-		if err := c.ShouldBindJSON(&order); err!= nil {
-            c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-            return
-        }
-		order.OrderDate = time.Now()
-		//check if that table with id TableID exists
-		_, err := models.GetTableByID(order.TableID)
-        if err!= nil {
-            c.JSON(http.StatusBadRequest, gin.H{"error": "Table not found"})
-            return
-        }
-        placedorder,err := models.CreateOrder(&order)
-        if err!= nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-            return
-        }
-        c.JSON(http.StatusCreated, gin.H{"order": placedorder})
+		if err := c.ShouldBindJSON(&order); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 		
+		// Ensure table exists
+		_, err := models.GetTableByID(order.TableID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Table not found"})
+			return
+		}
 
+		// Set timestamps
+		order.OrderDate = time.Now()
+		order.CreatedAt = time.Now()
+		order.UpdatedAt = time.Now()
+
+		placedOrder, err := models.CreateOrder(&order)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{"order": placedOrder})
 	}
 }
 
@@ -85,19 +89,19 @@ func UpdateOrder() gin.HandlerFunc {
 			return
 		}
 
-		
-		updatedOrder.ID = orderId
-
-		
+		// Preserve old values if not updated
 		if updatedOrder.OrderDate.IsZero() {
 			updatedOrder.OrderDate = order.OrderDate
 		}
 		if updatedOrder.TableID == 0 {
 			updatedOrder.TableID = order.TableID
 		}
+		if updatedOrder.UserID == 0 {
+			updatedOrder.UserID = order.UserID
+		}
 
-		
-		if updatedOrder.TableID != 0 {
+		// Ensure table exists if changed
+		if updatedOrder.TableID != order.TableID {
 			_, err := models.GetTableByID(updatedOrder.TableID)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Table not found"})
@@ -105,7 +109,9 @@ func UpdateOrder() gin.HandlerFunc {
 			}
 		}
 
+		updatedOrder.ID = orderId
 		updatedOrder.UpdatedAt = time.Now()
+
 		err = models.UpdateOrder(&updatedOrder)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -116,4 +122,26 @@ func UpdateOrder() gin.HandlerFunc {
 	}
 }
 
+func GetOrdersByUserID() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID, exists := c.Get("user_id")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			return
+		}
 
+		userId, ok := userID.(int)
+		if !ok {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid user ID format"})
+			return
+		}
+
+		orders, err := models.GetOrdersByUserID(userId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"orders": orders})
+	}
+}

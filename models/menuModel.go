@@ -15,6 +15,9 @@ type Menu struct {
 	EndDate   time.Time `json:"end-date"`
 	CreatedAt time.Time `json:"created-at"`
 	UpdatedAt time.Time `json:"updated-at"`
+	Foods     []Food    `json:"foods" gorm:"foreignKey:MenuID"`
+
+	
 }
 
 func GetMenus() ([]Menu, error) {
@@ -31,7 +34,11 @@ func GetMenus() ([]Menu, error) {
 		err := rows.Scan(&menu.ID, &menu.Name, &menu.Category, &menu.StartDate, &menu.EndDate, &menu.CreatedAt, &menu.UpdatedAt)
 		if err != nil {
 			return nil, err
-		}
+		}		
+		menu.Foods,_=GetFoodsByMenuID(menu.ID);
+
+
+
 		menus = append(menus, menu)
 	}
 	return menus, nil
@@ -54,6 +61,7 @@ func GetMenuByID(menuId int) (*Menu, error) {
 	if err != nil {
 		return nil, err
 	}
+	menu.Foods,_=GetFoodsByMenuID(menu.ID);
 	return &menu, nil
 }
 

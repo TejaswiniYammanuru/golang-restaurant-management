@@ -1,16 +1,17 @@
 package routes
 
 import (
-	controller "github.com/TejaswiniYammanuru/golang-restaurant-management/controllers"
-
+	"github.com/TejaswiniYammanuru/golang-restaurant-management/controllers"
 	"github.com/gin-gonic/gin"
 )
 
-func OrderItemRoutes(incomingRoutes *gin.Engine) {
-	incomingRoutes.GET("/orderItems", controller.GetOrderItems())
-	incomingRoutes.GET("/orderItems/:orderItem_id", controller.GetOrderItem())
-	incomingRoutes.GET("/orderItems-order/:order_id",controller.GetOrderItemsByOrder())
-	incomingRoutes.POST("/orderItems", controller.CreateOrderItem())
-	incomingRoutes.PATCH("/orderItems/:orderItem_id", controller.UpdateOrderItem())
+func OrderItemRoutes(router *gin.Engine) {
+	// Public routes (view order items)
+	router.GET("/orderItems", controllers.GetOrderItems())
+	router.GET("/orderItems/:orderItem_id", controllers.GetOrderItem())
+	router.GET("/orderItems-order/:order_id", controllers.GetOrderItemsByOrder())
 
+	// Protected routes (create and update order items)
+	router.POST("/orderItems", controllers.CreateOrderItem())
+	router.PATCH("/orderItems/:orderItem_id", controllers.UpdateOrderItem())
 }

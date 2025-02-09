@@ -14,10 +14,6 @@ type OrderItem struct {
 	OrderID   int       `json:"order_id" validate:"required" gorm:"not null;index"`
 	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime"`
 	UpdatedAt time.Time `json:"updated_at" gorm:"autoUpdateTime"`
-
-	
-	// Food  Food  `json:"food" gorm:"foreignKey:FoodID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	// Order Order `json:"order" gorm:"foreignKey:OrderID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
 
 func GetOrderItems() (orderItems []OrderItem, err error) {

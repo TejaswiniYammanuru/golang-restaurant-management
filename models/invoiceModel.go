@@ -19,7 +19,7 @@ type Invoice struct {
 	UpdatedAt      time.Time `json:"updated_at" gorm:"autoUpdateTime"`
 
 	
-	// Order Order `json:"order" gorm:"foreignKey:OrderID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	
 }
 
 
@@ -82,6 +82,31 @@ func UpdateInvoice(invoice *Invoice) error {
     _, err := database.DB.Exec(query, invoice.OrderID, invoice.PaymentMethod, invoice.PaymentStatus, invoice.PaymentDueDate, invoice.UpdatedAt, invoice.ID)
     return err
 }
+
+
+func GetInvoiceByOrderID(orderID int) (Invoice, error) {
+	query := "SELECT id, order_id, payment_method, payment_status, payment_due_date, created_at, updated_at FROM invoice WHERE order_id=$1"
+
+	var invoice Invoice
+
+	err := database.DB.QueryRow(query, orderID).Scan(
+		&invoice.ID,
+		&invoice.OrderID,
+		&invoice.PaymentMethod,
+		&invoice.PaymentStatus,
+		&invoice.PaymentDueDate,
+		&invoice.CreatedAt,
+		&invoice.UpdatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Invoice{}, errors.New("invoice not found") 
+		}
+		return Invoice{}, err
+	}
+	return invoice, nil
+}
+
 
 
 
